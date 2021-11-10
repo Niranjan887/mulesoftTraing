@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c74c5420-c8ec-43aa-b697-b1d8eb273973" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="5a956f26-c45c-4b70-8b35-3660e0a5bcd9" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="BasicsFlow1" doc:id="68d5e800-269b-448a-90d1-9ca242b889b5" >
+		<http:listener doc:name="Listener" doc:id="57f0e388-98b4-4e4e-9319-105a04c11572" config-ref="HTTP_Listener_config1" path="/transformer"/>
+		<ee:transform doc:name="Transform Message" doc:id="1f1a30b7-0f0f-4796-966a-c2c75b75880d" >
+			<ee:message >
+				<ee:set-payload resource="prosductxml.dwl" />
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="BasicsFlow" doc:id="ee9918f1-fd08-4e3c-9992-add728c43812" >
+	</flow>
+</mule>
