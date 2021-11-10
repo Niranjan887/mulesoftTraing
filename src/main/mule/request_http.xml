@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e3858ccb-ea3a-49a6-8793-5de96d6abe1b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="4096cdf3-cce6-4a5d-abdc-23dd5c79a593" />
+	<flow name="request_httpFlow" doc:id="4dba48fe-da7b-45d4-833f-4a17e46e980b" >
+		<http:listener doc:name="Listener" doc:id="2afab3df-fa1e-444b-9cf2-f86fa55b5d29" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-variable value="#[payload.cityname]" doc:name="Set Variable" doc:id="0c31dc2b-d283-43d2-84f0-4a5b08f56d1e" variableName="city"/>
+		<http:request method="GET" doc:name="Request" doc:id="d9d2b9a3-141f-4b68-be2b-46433060ec86" config-ref="HTTP_Request_configuration" url="http://api.openweathermap.org/data/2.5/weather">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	q : vars.city,
+	appid : "1a2539985d34d6986519eae81bb56f7f"
+}]]]></http:query-params>
+			<http:response-validator >
+				<http:success-status-code-validator values="200..499" />
+			</http:response-validator>
+		</http:request>
+		<choice doc:name="Choice" doc:id="ff5abbdd-2e99-48ac-8b3b-0d93b8be0f2e" >
+			<when expression='#[attributes.statusCode as String == "200"]'>
+				<ee:transform doc:name="Transform Message" doc:id="c15007f8-765d-42b7-9b74-3b1baa6b4d4d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "cityname": vars.city,
+  "max_temperature": payload.main.temp_max as Number - 273.15 ++ " celsius",
+  "min_temperature": payload.main.temp_min as Number - 273.15 ++ " celsius"
+  
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="d2dab70b-45ad-4c91-85d1-ea011faee64b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status code": payload.cod,
+	"message": payload.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
